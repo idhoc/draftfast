@@ -15,10 +15,10 @@ NAME_MAP = {
         'id': 'ID',
     },
     FAN_DUEL: {
-        'start': '"Nickname"',
-        'name': '"Nickname"',
-        'position': '"Position"',
-        'id': '"Player ID + Player Name"',
+        'start': 'Nickname',
+        'name': 'Nickname',
+        'position': 'Position',
+        'id': 'Player ID + Player Name',
     },
 }
 
@@ -172,7 +172,31 @@ class FanDuelNBAUploader(CSVUploader):
 
 
 class FanDuelNFLUploader(CSVUploader):
-    pass
+    LEAGUE = 'NFL'
+    HEADERS = [
+        'QB', 'RB', 'RB',
+        'WR', 'WR', 'WR',
+        'TE', 'FLEX', 'DEF'
+    ]
+    def write_rosters(self, rosters):
+        with open(self.upload_file, 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(self.HEADERS)
+            for roster in rosters:
+                write_to_csv(
+                    writer=writer,
+                    roster=roster,
+                    player_map=self.pid_map,
+                    game=FAN_DUEL,
+                )
+
+    def _map_pids(self, pid_file):
+        return map_pids(
+            pid_file,
+            game=FAN_DUEL,
+            encoding=self.encoding,
+            errors=self.errors,
+        )
 
 
 class DraftKingsNBAPickemUploader(CSVUploader):
