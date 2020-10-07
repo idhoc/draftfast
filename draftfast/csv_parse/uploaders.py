@@ -3,9 +3,13 @@ from itertools import islice
 from .upload import (
     write_to_csv,
 )
+
 from draftfast.rules import DRAFT_KINGS, FAN_DUEL
 from draftfast.pickem import pickem_orm, pickem_upload
 from draftfast import dke_exceptions as dke
+
+FANDUEL_UPLOAD_FILE = './data/fd_upload_{}.csv'
+DRAFTKINGS_UPLOAD_FILE = './data/dk_upload_{}.csv'
 
 NAME_MAP = {
     DRAFT_KINGS: {
@@ -54,7 +58,6 @@ def map_pids(pid_file, encoding, errors, game=DRAFT_KINGS):
             if 'DST' in line[position]:
                 line[name] = line[name].strip()
                 line[position] = line[position].strip()
-
             player_map[line[name] + " " + line[position]] = line[p_id]
 
     return player_map
@@ -62,8 +65,10 @@ def map_pids(pid_file, encoding, errors, game=DRAFT_KINGS):
 
 class CSVUploader(object):
 
-    def __init__(self, pid_file, upload_file='./upload.csv',
-                 encoding='utf-8', errors='replace'):
+    def __init__(
+            self, pid_file, upload_file='./upload.csv',
+            encoding='utf-8', errors='replace'
+    ):
         self.upload_file = upload_file
         self.encoding = encoding
         self.errors = errors
@@ -74,7 +79,9 @@ class CSVUploader(object):
 
 
 class DraftKingsUploader(CSVUploader):
+
     def write_rosters(self, rosters):
+        self.upload_file = DRAFTKINGS_UPLOAD_FILE.format(self.LEAGUE)
         with open(self.upload_file, 'w') as f:
             writer = csv.writer(f)
             writer.writerow(self.HEADERS)
@@ -84,6 +91,7 @@ class DraftKingsUploader(CSVUploader):
                     roster=roster,
                     player_map=self.pid_map,
                     league=self.LEAGUE,
+                    game=DRAFT_KINGS,
                 )
 
     def _map_pids(self, pid_file):
@@ -142,62 +150,7 @@ class DraftKingsXFLUploader(DraftKingsUploader):
         'FLEX', 'FLEX',
         'DST',
     ]
-
-
-class FanDuelNBAUploader(CSVUploader):
-    HEADERS = [
-        'PG', 'PG', 'SG', 'SG', 'SF',
-        'SF', 'PF', 'PF', 'C',
-    ]
-
-    def write_rosters(self, rosters):
-        with open(self.upload_file, 'w') as f:
-            writer = csv.writer(f)
-            writer.writerow(self.HEADERS)
-            for roster in rosters:
-                write_to_csv(
-                    writer=writer,
-                    roster=roster,
-                    player_map=self.pid_map,
-                    game=FAN_DUEL,
-                )
-
-    def _map_pids(self, pid_file):
-        return map_pids(
-            pid_file,
-            game=FAN_DUEL,
-            encoding=self.encoding,
-            errors=self.errors,
-        )
-
-
-class FanDuelNFLUploader(CSVUploader):
-    LEAGUE = 'NFL'
-    HEADERS = [
-        'QB', 'RB', 'RB',
-        'WR', 'WR', 'WR',
-        'TE', 'FLEX', 'DEF'
-    ]
-    def write_rosters(self, rosters):
-        with open(self.upload_file, 'w') as f:
-            writer = csv.writer(f)
-            writer.writerow(self.HEADERS)
-            for roster in rosters:
-                write_to_csv(
-                    writer=writer,
-                    roster=roster,
-                    player_map=self.pid_map,
-                    game=FAN_DUEL,
-                )
-
-    def _map_pids(self, pid_file):
-        return map_pids(
-            pid_file,
-            game=FAN_DUEL,
-            encoding=self.encoding,
-            errors=self.errors,
-        )
-
+    
 
 class DraftKingsNBAPickemUploader(CSVUploader):
     def write_rosters(self, rosters):
@@ -229,3 +182,44 @@ class DraftKingsCaptainShowdownUploader(DraftKingsUploader):
                     p.get_player_id(self.pid_map)
                     for p in roster.sorted_players()
                 ])
+
+
+class FanDuelUploader(CSVUploader):
+
+    def write_rosters(self, rosters):
+        self.upload_file = FANDUEL_UPLOAD_FILE.format(self.LEAGUE)
+        with open(self.upload_file, 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(self.HEADERS)
+            for roster in rosters:
+                write_to_csv(
+                    writer=writer,
+                    roster=roster,
+                    player_map=self.pid_map,
+                    league=self.LEAGUE,
+                    game=FAN_DUEL,
+                )
+
+    def _map_pids(self, pid_file):
+        return map_pids(
+            pid_file,
+            game=FAN_DUEL,
+            encoding=self.encoding,
+            errors=self.errors,
+        )
+
+class FanDuelNBAUploader(FanDuelUploader):
+    LEAGUE = 'NBA'
+    HEADERS = [
+        'PG', 'PG', 'SG', 'SG', 'SF',
+        'SF', 'PF', 'PF', 'C',
+    ]
+
+
+class FanDuelNFLUploader(FanDuelUploader):
+    LEAGUE = 'NFL'
+    HEADERS = [
+        'QB', 'RB', 'RB',
+        'WR', 'WR', 'WR',
+        'TE', 'FLEX', 'DEF'
+    ]
