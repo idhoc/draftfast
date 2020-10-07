@@ -184,7 +184,7 @@ def get_exposure_matrix(rosters, exclude=[]):
                 continue
             players.add(p)
 
-    sorted_names = sorted([p.short_name for p in players])
+    sorted_names = sorted([str(p.short_name) for p in players])
     player_matrix = np.zeros((len(players), len(players)), dtype=int)
 
     for r in rosters:
