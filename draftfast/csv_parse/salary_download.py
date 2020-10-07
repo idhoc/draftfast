@@ -138,7 +138,10 @@ def generate_player(pos, row, game):
     game_key = GAME_KEY_MAP[game]['game']
     game_alt_key = GAME_KEY_MAP[game]['game_alt']
 
-    avg = float(row.get(avg_key, 0))
+    try:
+        avg = float(row.get(avg_key, 0))
+    except:
+        avg = float(0)
 
     player = Player(
         pos,
