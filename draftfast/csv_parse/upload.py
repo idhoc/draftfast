@@ -1,14 +1,11 @@
 import os
 from draftfast.rules import DRAFT_KINGS, FAN_DUEL
 
-upload_file = '{}/data/current-upload.csv'.format(os.getcwd())
-
-
 def write_to_csv(writer, player_map, roster, game=DRAFT_KINGS,
                  league='NBA'):
     players = roster.sorted_players()
-
     ordered_possible = []
+
     if game == DRAFT_KINGS and league == 'EL':
         ordered_possible = [
             _on_position(players, ['G']),
@@ -76,6 +73,20 @@ def write_to_csv(writer, player_map, roster, game=DRAFT_KINGS,
             _on_position(players, ['SF', 'PF']),
             players
         ]
+    elif game == FAN_DUEL and league == 'NFL':
+        ordered_possible = [
+            _on_position(players, ['QB']),
+            _on_position(players, ['RB']),
+            _on_position(players, ['RB']),
+            _on_position(players, ['WR']),
+            _on_position(players, ['WR']),
+            _on_position(players, ['WR']),
+            _on_position(players, ['TE']),
+
+            # NFL Flex
+            _on_position(players, ['TE', 'WR', 'RB']),
+            _on_position(players, ['D']),
+        ]
     elif game == FAN_DUEL:
         ordered_possible = [
             _on_position(players, ['PG']),
@@ -98,6 +109,7 @@ def write_to_csv(writer, player_map, roster, game=DRAFT_KINGS,
             if p not in ordered_lineup
         ]
         ordered_lineup.append(not_used_ps[0])
+
 
     writer.writerow([
         p.get_player_id(player_map)
