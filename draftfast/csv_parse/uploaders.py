@@ -16,7 +16,7 @@ NAME_MAP = {
         'start': 'TeamAbbrev',
         'name': 'Name',
         'position': 'Position',
-        'id': 'ID',
+        'id': 'Name + ID',
     },
     FAN_DUEL: {
         'start': 'Nickname',
