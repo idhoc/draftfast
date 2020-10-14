@@ -9,13 +9,49 @@ from draftfast.lineup_constraints import LineupConstraints
 import pandas as pd
 import csv
 
+# TODO: Convert into class and class methods
+
+def adjust_projections(projection_file, site='DK', ownership_weight=0.3, value_weight=0.7):
+    projections = pd.read_csv(projection_file)
+    projections['ownership'] = projections['{} Ownership'.format(site)].map(
+        lambda x: x.replace('%', '')
+    ).astype(int).map(lambda x: x+1)
+    projections['ownership_rank'] = 2.01-projections.groupby('{} Position'.format(site))['ownership'].apply(
+        lambda x: (x-min(x))/(max(x)-min(x))
+    )
+    projections['value_rank'] = projections.groupby('{} Position'.format(site))['{} Value'.format(site)].apply(
+        lambda x: (x-min(x))/(max(x)-min(x))
+    )
+    projections['o_v'] = ownership_weight*projections['ownership_rank'] + value_weight*projections['value_rank']
+    projections['weight'] = projections.groupby("{} Position".format(site))['o_v'].apply(
+        lambda x: 1+(x-min(x))/(max(x)-min(x))
+    )
+    projections['adjusted_points'] = projections['weight']*projections['{} Projection'.format(site)]
+    
+    projection_output = projections[
+        [
+            'Player', '{} Position'.format(site), '{} Ownership'.format(site), 
+            '{} Value'.format(site), '{} Projection'.format(site), 'adjusted_points'
+        ]
+    ]
+    projection_output = projection_output.rename(
+        columns = {
+            'Player': 'playername',
+            'adjusted_points': 'points'
+        }
+    )
+    
+    projection_output.to_csv(projection_file)
+    
+    return True
+
 
 def make_params(teams, ban_list, target_wrs, target_rbs, exposures):
 
     stacks=[Stack(team=good['team'], count=good['count'], stack_lock_pos=good['lock'], stack_eligible_pos=good['eligible']) for good in teams]
 
     optimizers = OptimizerSettings(
-        stacks=stacks
+        stacks=stacks,
     )
 
     banned_list = ban_list
