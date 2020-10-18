@@ -8,15 +8,15 @@ from draftfast.rules import DRAFT_KINGS, FAN_DUEL
 from draftfast.pickem import pickem_orm, pickem_upload
 from draftfast import dke_exceptions as dke
 
-FANDUEL_UPLOAD_FILE = './data/fd_upload_{}.csv'
-DRAFTKINGS_UPLOAD_FILE = './data/dk_upload_{}.csv'
+# FANDUEL_UPLOAD_FILE = './data/fd_upload_{}.csv'
+# DRAFTKINGS_UPLOAD_FILE = './data/dk_upload_{}.csv'
 
 NAME_MAP = {
     DRAFT_KINGS: {
         'start': 'TeamAbbrev',
         'name': 'Name',
         'position': 'Position',
-        'id': 'Name + ID',
+        'id': 'ID',
     },
     FAN_DUEL: {
         'start': 'Nickname',
@@ -81,7 +81,7 @@ class CSVUploader(object):
 class DraftKingsUploader(CSVUploader):
 
     def write_rosters(self, rosters):
-        self.upload_file = DRAFTKINGS_UPLOAD_FILE.format(self.LEAGUE)
+        # self.upload_file = DRAFTKINGS_UPLOAD_FILE.format(self.LEAGUE)
         with open(self.upload_file, 'w') as f:
             writer = csv.writer(f)
             writer.writerow(self.HEADERS)
@@ -150,7 +150,7 @@ class DraftKingsXFLUploader(DraftKingsUploader):
         'FLEX', 'FLEX',
         'DST',
     ]
-    
+
 
 class DraftKingsNBAPickemUploader(CSVUploader):
     def write_rosters(self, rosters):
@@ -187,7 +187,7 @@ class DraftKingsCaptainShowdownUploader(DraftKingsUploader):
 class FanDuelUploader(CSVUploader):
 
     def write_rosters(self, rosters):
-        self.upload_file = FANDUEL_UPLOAD_FILE.format(self.LEAGUE)
+        # self.upload_file = FANDUEL_UPLOAD_FILE.format(self.LEAGUE)
         with open(self.upload_file, 'w') as f:
             writer = csv.writer(f)
             writer.writerow(self.HEADERS)
@@ -207,6 +207,7 @@ class FanDuelUploader(CSVUploader):
             encoding=self.encoding,
             errors=self.errors,
         )
+
 
 class FanDuelNBAUploader(FanDuelUploader):
     LEAGUE = 'NBA'
